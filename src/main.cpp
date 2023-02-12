@@ -59,10 +59,12 @@ SPIClass spiSD(HSPI);
   const char* ssid = "your ssidA";
   const char* password = "your passwardA";
 
+char appName[7][12]={"Home","AlarmClock","RemoteLight","Paint","Line","Gyanken","Settings"};
+
 uint16_t ShTColor = TFT_WHITE;
 uint16_t ShDColor = TFT_WHITE;
   int sleepTimer=0;
-  int app=2;
+  int app=0;
   int AlarmHour=6;
   int AlarmMin =0;
   bool IsAlarmON = true;
@@ -95,22 +97,46 @@ void DrawStartMenu_Dots(void){
   tft.setCursor(30,83);
   tft.println("Tellurnoid");
 }
+void draw_Header(void){
+  tft.fillRect(0,0,240,40,TFT_BLACK);
+}
+void draw_HomeMenu(void){
+tft.fillRect(0,40,240,320-40,TFT_BLACK);
+
+tft.drawRoundRect(240-40,100, 40,80, 10,TFT_BLUE);//上
+tft.drawRoundRect(240-40,180, 40,40, 10,TFT_BLUE);//決定
+tft.drawRoundRect(240-40,220, 40,80, 10,TFT_BLUE);//下
+tft.drawRoundRect(240-40,180, 40,40, 10,TFT_CYAN);//決定ボタン装飾
+tft.drawRoundRect(240-40+5,180+5, 30,30, 7,TFT_CYAN);//決定ボタン装飾
+tft.drawLine(220,132,210,148,TFT_CYAN);// 上矢印
+tft.drawLine(220,132,230,148,TFT_CYAN);//上矢印
+tft.drawLine(220,265,210,250,TFT_CYAN);//下矢印
+tft.drawLine(220,265,230,250,TFT_CYAN);//下矢印
+  for(int i=2; i<8; i++){//40*7
+    tft.drawRect(12,i*40,182,40,TFT_DARKCYAN);
+  }
+  tft.setTextColor(TFT_WHITE);
+  tft.setFreeFont(FF21);
+  for(int i=1; i<7; i++){
+    tft.drawCentreString((String)appName[i],101,i*40+50,2);
+  }
+}
 void draw_RemoteLightGrid(void){
   #define BTSIZE 80
-  tft.fillRect(0,40,240,320-80,TFT_BLACK);
+  tft.fillRect(0,40,240,320-40,TFT_BLACK);
   tft.fillRoundRect(0,40,TFT_WIDTH,66,10,TFT_GRAY);
-  tft.fillRoundRect(0,one_thirdBOXSIZE,halfWidth,one_thirdBOXSIZE,10,TFT_GRAY);
-  tft.fillRoundRect(halfWidth,one_thirdBOXSIZE,halfWidth,one_thirdBOXSIZE,10,TFT_GRAY);
+  tft.fillRoundRect(0,106,120,106,10,TFT_GRAY);
+  tft.fillRoundRect(120,106,120,106,10,TFT_GRAY);
   tft.fillRoundRect(0,212,TFT_WIDTH,66,10,TFT_GRAY);
   tft.fillCircle(220,15,10,TFT_GREENYELLOW);
   tft.drawRect(0,40,TFT_WIDTH,66,TFT_BLACK);
-  tft.drawRect(0,one_thirdBOXSIZE,halfWidth,one_thirdBOXSIZE,TFT_BLACK);
-  tft.drawRect(halfWidth,one_thirdBOXSIZE,halfWidth,one_thirdBOXSIZE,TFT_BLACK);
+  tft.drawRect(0,106,120,106,TFT_BLACK);
+  tft.drawRect(120,106,120,106,TFT_BLACK);
   tft.drawRect(0,212,TFT_WIDTH,66,TFT_BLACK);
   tft.setTextColor(TFT_BLUE);
   tft.setFreeFont(FF21);
-  tft.drawCentreString("ON/OFF",halfWidth,73,2);
-  tft.drawCentreString("Night",halfWidth,245,2);
+  tft.drawCentreString("ON/OFF",120,73,2);
+  tft.drawCentreString("Night",120,245,2);
   tft.drawCentreString("Brighter",180,159,2);
   tft.drawCentreString("Darker",60,159,2);
         tft.drawRoundRect(0,285,240,35,2,TFT_DARKCYAN);
@@ -128,16 +154,67 @@ void draw_AlarmClock(void){
   tft.fillCircle(220,15,10,TFT_RED);//閉じる
   tft.drawRoundRect(150,245,85,30,10,TFT_GREEN);
   if(IsAlarmON==true){tft.fillRoundRect(150,245,40,30,10,TFT_GREEN);}
-  if(IsAlarmON==false){tft.fillRoundRect(195,245,40,30,10,TFT_GREEN);}
+  if(IsAlarmON==false){tft.drawRoundRect(195,245,40,30,10,TFT_GREEN);}
    tft.setTextColor(TFT_BLUE,TFT_BLACK);
        tft.drawCentreString((String)AlarmHour,60,120,1);
-       tft.drawCentreString(":",halfWidth,120,1);
+       tft.drawCentreString(":",120,120,1);
        tft.drawCentreString((String)AlarmMin,180,120,1);
         tft.drawRoundRect(0,285,240,35,2,TFT_DARKCYAN);
         tft.setTextColor(TFT_WHITE,TFT_BLACK);
         tft.drawCentreString("Sleep",115,297,2);
         tft.setTextColor(TFT_BLUE);
-
+        tft.setCursor(0,0);
+}
+#define TouchDelayHome 100
+void app_HomeMenu(void){
+   TS_Point p = ts.getPoint();
+   p.x = map(p.x, TS_MINX, TS_MAXX, 0, tft.width());
+   p.y = map(p.y, TS_MINY, TS_MAXY, 0, tft.height());
+   if(p.z>200){
+    if(p.x>200){
+      if(p.y>80 && p.y<160){//上
+      tft.fillRoundRect(240-40,100, 40,80, 10,TFT_BLUE);//上
+      delay(TouchDelayHome);
+      tft.fillRoundRect(240-40,100, 40,80, 10,TFT_BLACK);
+      tft.drawRoundRect(240-40,100, 40,80, 10,TFT_BLUE);
+      tft.drawLine(220,132,210,148,TFT_CYAN);
+      tft.drawLine(220,132,230,148,TFT_CYAN);
+      } 
+      if(p.y>160 && p.y<200){//決定
+      tft.fillRoundRect(240-40+5,180+5, 30,30, 7,TFT_CYAN);//決定
+      delay(TouchDelayHome);
+      tft.fillRoundRect(240-40+5,180+5, 30,30, 7,TFT_BLACK);
+      } 
+      if(p.y>200 && p.y<280){//下
+      tft.fillRoundRect(240-40,220, 40,80, 10,TFT_BLUE);//下
+      delay(TouchDelayHome);
+      tft.fillRoundRect(240-40,220, 40,80, 10,TFT_BLUE);
+      tft.drawRoundRect(240-40,220, 40,80, 10,TFT_BLUE);
+      tft.drawLine(220,265,210,250,TFT_CYAN);//下矢印
+      tft.drawLine(220,265,230,250,TFT_CYAN);//下矢印
+      } 
+    }
+    if(p.x<200){
+      if(p.y>80){
+        if(p.y<120){
+           tft.drawRect(12,80,182,40,TFT_RED);
+           delay(TouchDelayHome);
+          app=1;
+          draw_AlarmClock();
+        }
+        if(p.x<160 && p.y>120){
+           tft.drawRect(12,120,182,40,TFT_RED);
+           delay(TouchDelayHome);
+          app=2;
+          draw_RemoteLightGrid();
+        }
+        if(p.x<200 && p.x>160){}
+        if(p.x<240 && p.x>200){}
+        if(p.x<280 && p.x>240){}
+        if(p.x<320 && p.x>280){}
+      }
+    }
+   }
 }
 void app_AlarmClock(void){
   tft.setFreeFont(FF20);
@@ -151,19 +228,19 @@ void app_AlarmClock(void){
    TS_Point p = ts.getPoint();
    p.x = map(p.x, TS_MINX, TS_MAXX, 0, tft.width());
    p.y = map(p.y, TS_MINY, TS_MAXY, 0, tft.height());
-  if(p.z>200){
+   if(p.z>200){
     digitalWrite(TFT_BL, HIGH);
     tft.setTextColor(TFT_BLUE,TFT_BLACK);
-    if(p.y<48 && p.x>210){app=2;draw_RemoteLightGrid();delay(500);}//閉じる
-    else if(p.y<120 && p.y>40){//up
-      if(p.x<halfWidth){//時間up
+   if(p.y<40 && p.x>200){app=0;draw_HomeMenu();delay(500);app_HomeMenu();}//閉じる
+    if(p.y<120 && p.y>40){//up
+      if(p.x<120){//時間up
         AlarmHour=AlarmHour+1;
         if(AlarmHour>23){AlarmHour=0;}
         tft.fillRect(20,115,90,60,TFT_BLACK);
         tft.drawCentreString((String)AlarmHour,60,120,1);
          delay(100);
         }
-      if(p.x>halfWidth){//分up
+      if(p.x>120){//分up
         AlarmMin=AlarmMin+1;
         if(AlarmMin>60){AlarmMin=0;}
         tft.fillRect(140,115,90,60,TFT_BLACK);
@@ -173,14 +250,14 @@ void app_AlarmClock(void){
 
     }
     else if(p.y<240){//down
-      if(p.x<halfWidth){//時間down
+      if(p.x<120){//時間down
         AlarmHour=AlarmHour-1;
         if(AlarmHour<0){AlarmHour=23;}
         tft.fillRect(20,115,90,60,TFT_BLACK);
         tft.drawCentreString((String)AlarmHour,60,120,1);
          delay(100);
         }
-      if(p.x>halfWidth){//分down
+      if(p.x>120){//分down
         AlarmMin=AlarmMin-1;
         if(AlarmMin<0){AlarmMin=60;}
         tft.fillRect(140,115,90,60,TFT_BLACK);
@@ -246,27 +323,29 @@ void app_RemoteLight(void){
   TS_Point p = ts.getPoint();
   p.x = map(p.x, TS_MINX, TS_MAXX, 0, tft.width());
   p.y = map(p.y, TS_MINY, TS_MAXY, 0, tft.height());
+  
   if(p.z>200){
     digitalWrite(TFT_BL, HIGH);
-   if(p.y<48 && p.x>210){app=1;draw_AlarmClock();}
-   else if(p.y<one_thirdBOXSIZE){
+  if(p.y<40 && p.x>200){app=0;draw_HomeMenu();delay(500);app_HomeMenu();}//閉じる
+   if(p.y>40){
+   if(p.y<106){
       IrSender.sendOnkyo(0x1275, 0x207, 0);//ON&OFF
       tft.drawRect(0,40,TFT_WIDTH,66,TFT_BLUE);
       delay(1000);
       tft.drawRect(0,40,TFT_WIDTH,66,TFT_BLACK);
     }
    else if(p.y<212){
-    if(p.x<halfWidth){//暗
+    if(p.x<120){//暗
       IrSender.sendOnkyo(0x1275, 0x206,0);
-      tft.drawRect(0,one_thirdBOXSIZE,halfWidth,one_thirdBOXSIZE,TFT_BLUE);
+      tft.drawRect(0,106,120,106,TFT_BLUE);
       delay(1000);
-      tft.drawRect(0,one_thirdBOXSIZE,halfWidth,one_thirdBOXSIZE,TFT_BLACK);      
+      tft.drawRect(0,106,120,106,TFT_BLACK);      
     }
-    if(p.x>halfWidth){//明
+    if(p.x>120){//明
       IrSender.sendOnkyo(0x1275, 0x208, 0);
-      tft.drawRect(halfWidth,one_thirdBOXSIZE,halfWidth,one_thirdBOXSIZE,TFT_BLUE);
+      tft.drawRect(120,106,120,106,TFT_BLUE);
       delay(1000);
-      tft.drawRect(halfWidth,one_thirdBOXSIZE,halfWidth,one_thirdBOXSIZE,TFT_BLACK);      
+      tft.drawRect(120,106,120,106,TFT_BLACK);      
     }
    }
    else if(p.y<278){//常夜灯
@@ -279,9 +358,11 @@ void app_RemoteLight(void){
         digitalWrite(TFT_BL, LOW);
         sleepTimer=50;
       }
+  }
 }
    delay(200);
 }
+
 
 
 void setup() {
@@ -318,14 +399,14 @@ void setup() {
   //}
   tft.println("SD_ok");
   if(p.z>200){
-  if(p.x>halfWidth){
-  ssid = "your ssidA";
-  password = "your passwordA";
+  if(p.x>120){
+  ssid = "tellurnoidWifi";
+  password = "00000000";
   tft.println("Select Phone");    
   }
-  if(p.x<halfWidth){
- ssid = "your ssidA";
-  password = "your passwordA";
+  if(p.x<120){
+  ssid = "A0957F978755-5G";
+  password = "ftn4y7hen4sr6h";  
   tft.println("Select Home WIFI");  
   }
   WiFi.begin(ssid, password);
@@ -359,7 +440,8 @@ tft.initDMA();
   TJpgDec.getSdJpgSize(&w, &h, "/3X4/GogouForest34.jpeg");
   TJpgDec.drawSdJpg(0, 0, "/3X4/GogouForest34.jpeg");
   tft.endWrite();
-  draw_RemoteLightGrid();
+  draw_Header();
+  draw_HomeMenu();
 }
 void loop() {
    if (ts.bufferEmpty()) {
@@ -377,27 +459,27 @@ void loop() {
    TS_Point p = ts.getPoint();
    p.x = map(p.x, TS_MINX, TS_MAXX, 0, tft.width());
    p.y = map(p.y, TS_MINY, TS_MAXY, 0, tft.height());
+   for(;;){
    if(p.z>200){digitalWrite(TFT_BL, HIGH);sleepTimer=0;}
-    for(;;){
     if(app==1){app_AlarmClock();}
     else if(app==2){app_RemoteLight();}
-    else if(app==0){}
+    else if(app==0){app_HomeMenu();}
   if (tm->tm_min != oldTime){
   tft.startWrite();
-  tft.fillRect(0,0,240,40,TFT_BLACK);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
+  tft.fillRect(0,0,210,40,TFT_BLACK);                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
   tft.setCursor(0, 0);
   tft.setTextColor(ShDColor);
   tft.setFreeFont(FF21);
   tft.startWrite();
   tft.println();
-  tft.print("    ");
+  tft.print("  ");
   tft.print(tm->tm_hour);
   tft.print(":");
   if(tm->tm_min<10){tft.print("0");}
   tft.print(tm->tm_min);
   tft.print("    ");
-  tft.print(tm->tm_year+1900);
-  tft.print(" "); 
+  //tft.print(tm->tm_year+1900);
+  //tft.print(" "); 
   tft.print(tm->tm_mon+1);
   tft.print("/");
   tft.print(tm->tm_mday);
@@ -408,16 +490,9 @@ void loop() {
   tft.endWrite();
   if((tm->tm_hour)==AlarmHour && (tm->tm_min)==AlarmMin && (tm->tm_sec)==0 && IsAlarmON==true){
      digitalWrite(TFT_BL, HIGH);
-      IrSender.sendOnkyo(0x1275, 0x207, 0);//ON&OFF
-      tft.drawRect(0,0,TFT_WIDTH,one_thirdBOXSIZE,TFT_BLUE);
-      delay(1000);
-      tft.drawRect(0,0,TFT_WIDTH,one_thirdBOXSIZE,TFT_BLACK);
-      for(int i=0; i<5; i++){
-        IrSender.sendOnkyo(0x1275, 0x208, 0);//明
-      tft.drawRect(halfWidth,one_thirdBOXSIZE,halfWidth,one_thirdBOXSIZE,TFT_BLUE);
-      delay(1000);
-      tft.drawRect(halfWidth,one_thirdBOXSIZE,halfWidth,one_thirdBOXSIZE,TFT_BLACK);
-      }
+   IrSender.sendOnkyo(0x1275, 0x202, 0);
+   delay(1000);
+   sleepTimer=0;
   }
   oldTime= tm->tm_min;
   sleepTimer++;
